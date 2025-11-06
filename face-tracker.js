@@ -23,6 +23,20 @@ function gridToFilename(px, py) {
   return `gaze_px${sanitize(px)}_py${sanitize(py)}_${SIZE}.webp`;
 }
 
+function preloadImages(basePath) {
+  const positions = [];
+  for (let px = P_MIN; px <= P_MAX; px += STEP) {
+    for (let py = P_MIN; py <= P_MAX; py += STEP) {
+      positions.push({ px, py });
+    }
+  }
+
+  positions.forEach(({ px, py }) => {
+    const img = new Image();
+    img.src = `${basePath}${gridToFilename(px, py)}`;
+  });
+}
+
 function updateDebug(debugEl, x, y, filename) {
   if (!debugEl) return;
   debugEl.innerHTML = `Mouse: (${Math.round(x)}, ${Math.round(y)})<br/>Image: ${filename}`;
@@ -85,5 +99,12 @@ function initializeFaceTracker(container) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Preload all images for smooth tracking
+  const firstTracker = document.querySelector('.face-tracker');
+  if (firstTracker) {
+    const basePath = firstTracker.dataset.basePath || '/faces/';
+    preloadImages(basePath);
+  }
+
   document.querySelectorAll('.face-tracker').forEach((el) => initializeFaceTracker(el));
 });
